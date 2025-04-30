@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soul Map | Life Navigation System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2A5934;
+            --secondary: #8AB17D;
+            --accent: #D4C685;
+            --background: #F8F5F0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: var(--background);
+            color: #333;
+            line-height: 1.6;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 2rem 0;
+            border-bottom: 2px solid var(--primary);
+            margin-bottom: 2rem;
+        }
+
+        .header h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .header p {
+            color: var(--secondary);
+            font-weight: 300;
+        }
+
+        .section {
+            background: white;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .category-card {
+            padding: 1.5rem;
+            border: 2px solid var(--secondary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .category-card.selected {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .goal-input {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+
+        .progress-container {
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .ai-reflection {
+            background: var(--accent);
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            font-style: italic;
+        }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: opacity 0.3s ease;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .vision-snapshot {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(rgba(255,255,255,0.9), rgba(255,255,255,0.9)),
+                        url('https://images.unsplash.com/photo-1497864149936-316376ea4301?auto=format&fit=crop&w=1350');
+            background-size: cover;
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌿 Soul Map</h1>
+        <p>Your Personal Growth Ecosystem</p>
+    </div>
+
+    <!-- Profile Section -->
+    <div class="section">
+        <h2>Step 1: Define Your Foundation</h2>
+        <input type="text" class="goal-input" placeholder="Your Name" id="userName">
+        <select class="goal-input" id="lifeFocus">
+            <option value="">Select Your Primary Focus</option>
+            <option value="career">Career Development</option>
+            <option value="spiritual">Spiritual Growth</option>
+            <option value="relationships">Relationship Mastery</option>
+        </select>
+    </div>
+
+    <!-- Life Areas -->
+    <div class="section">
+        <h2>Step 2: Choose Growth Domains</h2>
+        <div class="category-grid" id="categoryGrid">
+            <div class="category-card" data-category="career">🚀 Career</div>
+            <div class="category-card" data-category="health">💪 Health</div>
+            <div class="category-card" data-category="spirituality">🕊️ Spirituality</div>
+            <div class="category-card" data-category="relationships">💞 Relationships</div>
+            <div class="category-card" data-category="creativity">🎨 Creativity</div>
+        </div>
+    </div>
+
+    <!-- Goal Setting -->
+    <div class="section">
+        <h2>Step 3: Plant Your Goals</h2>
+        <div id="goalSection"></div>
+    </div>
+
+    <!-- Progress & Reflection -->
+    <div class="section">
+        <h2>Step 4: Nurture Progress</h2>
+        <div class="ai-reflection">
+            "What small step can you take today toward your most important goal?"
+        </div>
+        <div id="progressBars"></div>
+    </div>
+
+    <!-- Vision Preview -->
+    <div class="vision-snapshot">
+        <h3>Your Vision Horizon</h3>
+        <p>[Future Feature: AI-Generated Vision Board]</p>
+    </div>
+
+<script>
+// Professional Data Manager
+const SoulMap = {
+    data: JSON.parse(localStorage.getItem('soulMap')) || {
+        profile: { name: '', focus: '' },
+        categories: [],
+        goals: {},
+        progress: {}
+    },
+
+    save() {
+        localStorage.setItem('soulMap', JSON.stringify(this.data));
+    },
+
+    init() {
+        // Load existing data
+        document.getElementById('userName').value = this.data.profile.name;
+        document.getElementById('lifeFocus').value = this.data.profile.focus;
+        
+        // Setup categories
+        document.querySelectorAll('.category-card').forEach(card => {
+            card.addEventListener('click', () => this.toggleCategory(card));
+            if(this.data.categories.includes(card.dataset.category)) {
+                card.classList.add('selected');
+            }
+        });
+        
+        this.renderGoals();
+    },
+
+    toggleCategory(card) {
+        const category = card.dataset.category;
+        if(this.data.categories.includes(category)) {
+            this.data.categories = this.data.categories.filter(c => c !== category);
+            card.classList.remove('selected');
+        } else {
+            this.data.categories.push(category);
+            card.classList.add('selected');
+        }
+        this.renderGoals();
+        this.save();
+    },
+
+    renderGoals() {
+        const goalsHTML = this.data.categories.map(category => `
+            <div class="goal-card">
+                <h3>${category.toUpperCase()}</h3>
+                <input class="goal-input" 
+                       placeholder="Your ${category} goal..." 
+                       value="${this.data.goals[category] || ''}"
+                       onchange="SoulMap.updateGoal('${category}', this.value)">
+                <div class="progress-container">
+                    <div class="progress-bar" id="${category}-progress"></div>
+                </div>
+            </div>
+        `).join('');
+        
+        document.getElementById('goalSection').innerHTML = goalsHTML;
+    },
+
+    updateGoal(category, value) {
+        this.data.goals[category] = value;
+        this.save();
+    }
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => SoulMap.init());
+
+// Profile Updates
+document.getElementById('userName').addEventListener('input', (e) => {
+    SoulMap.data.profile.name = e.target.value;
+    SoulMap.save();
+});
+
+document.getElementById('lifeFocus').addEventListener('change', (e) => {
+    SoulMap.data.profile.focus = e.target.value;
+    SoulMap.save();
+});
+</script>
+</body>
+</html>
