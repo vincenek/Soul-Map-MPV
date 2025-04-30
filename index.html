@@ -39,8 +39,9 @@
         }
 
         .logo {
-            width: 180px;
-            margin-bottom: 1.5rem;
+            width: 220px;
+            margin: 0 auto 1.5rem;
+            display: block;
             filter: drop-shadow(0 2px 4px rgba(42, 74, 60, 0.1));
         }
 
@@ -291,7 +292,7 @@
 </head>
 <body>
     <div class="header">
-        <img src="https://i.imgur.com/G6jYHhE.png" alt="Soul Map Logo" class="logo">
+        <img src="https://i.imgur.com/4rXJq1j.png" alt="Soul Map Logo" class="logo">
         <h1>Soul Map</h1>
         <p>Conscious Life Design System</p>
     </div>
@@ -358,7 +359,6 @@
     </div>
 
 <script>
-// Professional Data Manager
 const SoulMap = {
     data: JSON.parse(localStorage.getItem('soulMap')) || {
         profile: { name: '', focus: '' },
@@ -367,7 +367,6 @@ const SoulMap = {
         progress: {}
     },
 
-    // New Features
     aiPrompts: [
         "Based on your career goal: Have you networked with 2 peers this week?",
         "Your health progress is 40% – try a 10-minute walk today!",
@@ -387,17 +386,14 @@ const SoulMap = {
     },
 
     init() {
-        // Initialize fake users
         if(!localStorage.getItem('fakeUsersAdded')) {
             this.addFakeUsers();
             localStorage.setItem('fakeUsersAdded', 'true');
         }
 
-        // Load existing data
         document.getElementById('userName').value = this.data.profile.name;
         document.getElementById('lifeFocus').value = this.data.profile.focus;
         
-        // Setup categories
         document.querySelectorAll('.category-card').forEach(card => {
             card.addEventListener('click', () => this.toggleCategory(card));
             if(this.data.categories.includes(card.dataset.category)) {
@@ -426,7 +422,7 @@ const SoulMap = {
         const realUsers = Object.keys(localStorage).filter(k => k.startsWith('soulMap') && !k.includes('fake')).length;
         const fakeUsers = Object.keys(localStorage).filter(k => k.includes('soulMap_fake')).length;
         document.getElementById('totalUsers').textContent = realUsers + fakeUsers;
-        document.getElementById('totalGoals').textContent = (realUsers + fakeUsers) * 2; // 2 goals/user avg
+        document.getElementById('totalGoals').textContent = (realUsers + fakeUsers) * 2;
     },
 
     toggleCategory(card) {
@@ -491,10 +487,8 @@ const SoulMap = {
     }
 };
 
-// Initialize
 document.addEventListener('DOMContentLoaded', () => SoulMap.init());
 
-// Profile Updates
 document.getElementById('userName').addEventListener('input', (e) => {
     SoulMap.data.profile.name = e.target.value;
     SoulMap.save();
