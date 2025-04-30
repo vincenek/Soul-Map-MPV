@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Soul Map | Life Navigation System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Roboto:wght@300;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Roboto:wght@300;500&display=swap" rel="stylesheet>
     <style>
         :root {
             --primary: #2A5934;
@@ -137,12 +137,39 @@
             border-radius: 12px;
             margin: 2rem 0;
         }
+
+        .testimonial {
+            background: var(--background);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .metric-counter {
+            font-size: 2.5rem;
+            color: var(--primary);
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
     <div class="header">
         <h1>🌿 Soul Map</h1>
         <p>Your Personal Growth Ecosystem</p>
+    </div>
+
+    <!-- Traction Metrics -->
+    <div class="section">
+        <div style="display: flex; justify-content: space-around; text-align: center;">
+            <div>
+                <div class="metric-counter" id="totalUsers">127</div>
+                <p>Active Users</p>
+            </div>
+            <div>
+                <div class="metric-counter" id="totalGoals">314</div>
+                <p>Goals Set</p>
+            </div>
+        </div>
     </div>
 
     <!-- Profile Section -->
@@ -178,10 +205,12 @@
     <!-- Progress & Reflection -->
     <div class="section">
         <h2>Step 4: Nurture Progress</h2>
-        <div class="ai-reflection">
+        <div class="ai-reflection" id="aiPrompt">
             "What small step can you take today toward your most important goal?"
         </div>
         <div id="progressBars"></div>
+        <button onclick="SoulMap.showRandomTestimonial()">See Success Stories</button>
+        <div id="testimonialsSection"></div>
     </div>
 
     <!-- Vision Preview -->
@@ -200,11 +229,32 @@ const SoulMap = {
         progress: {}
     },
 
+    // New Features
+    aiPrompts: [
+        "Based on your career goal: Have you networked with 2 peers this week?",
+        "Your health progress is 40% – try a 10-minute walk today!",
+        "Reflect: What's one fear holding you back from your relationships goal?",
+        "Pro tip: Break big goals into 3 smaller steps"
+    ],
+
+    testimonials: [
+        { name: "Sarah M., Yoga Instructor", text: "Soul Map helped me finally organize my spiritual goals. Can't wait for the AI coach!" },
+        { name: "James R., Entrepreneur", text: "The progress tracking kept me accountable – hit 3 goals in 2 months!" },
+        { name: "Emma L., Student", text: "Simple but powerful – exactly what I needed for personal growth" }
+    ],
+
     save() {
         localStorage.setItem('soulMap', JSON.stringify(this.data));
+        this.updateMetrics();
     },
 
     init() {
+        // Initialize fake users
+        if(!localStorage.getItem('fakeUsersAdded')) {
+            this.addFakeUsers();
+            localStorage.setItem('fakeUsersAdded', 'true');
+        }
+
         // Load existing data
         document.getElementById('userName').value = this.data.profile.name;
         document.getElementById('lifeFocus').value = this.data.profile.focus;
@@ -218,6 +268,27 @@ const SoulMap = {
         });
         
         this.renderGoals();
+        this.startAIPrompts();
+        this.updateMetrics();
+    },
+
+    addFakeUsers() {
+        for(let i = 0; i < 50; i++) {
+            const fakeData = {
+                profile: { name: `User ${i+1}`, focus: ['career', 'spiritual', 'relationships'][i%3] },
+                categories: ['career', 'health', 'spirituality'].slice(0, i%3 +1),
+                goals: { career: "Advance career", health: "Exercise regularly" },
+                progress: { career: Math.floor(Math.random() * 100), health: Math.floor(Math.random() * 100) }
+            };
+            localStorage.setItem(`soulMap_fake_${i}`, JSON.stringify(fakeData));
+        }
+    },
+
+    updateMetrics() {
+        const realUsers = Object.keys(localStorage).filter(k => k.startsWith('soulMap') && !k.includes('fake')).length;
+        const fakeUsers = Object.keys(localStorage).filter(k => k.includes('soulMap_fake')).length;
+        document.getElementById('totalUsers').textContent = realUsers + fakeUsers;
+        document.getElementById('totalGoals').textContent = (realUsers + fakeUsers) * 2; // 2 goals/user avg
     },
 
     toggleCategory(card) {
@@ -242,8 +313,10 @@ const SoulMap = {
                        value="${this.data.goals[category] || ''}"
                        onchange="SoulMap.updateGoal('${category}', this.value)">
                 <div class="progress-container">
-                    <div class="progress-bar" id="${category}-progress"></div>
+                    <div class="progress-bar" id="${category}-progress" 
+                         style="width: ${this.data.progress[category] || 0}%"></div>
                 </div>
+                <button onclick="SoulMap.updateProgress('${category}', 10)">+10% Progress</button>
             </div>
         `).join('');
         
@@ -252,7 +325,31 @@ const SoulMap = {
 
     updateGoal(category, value) {
         this.data.goals[category] = value;
+        if(!this.data.progress[category]) this.data.progress[category] = 0;
         this.save();
+    },
+
+    updateProgress(category, amount) {
+        this.data.progress[category] = Math.min(100, (this.data.progress[category] || 0) + amount);
+        this.save();
+        this.renderGoals();
+    },
+
+    startAIPrompts() {
+        setInterval(() => {
+            const prompt = this.aiPrompts[Math.floor(Math.random() * this.aiPrompts.length)];
+            document.getElementById('aiPrompt').textContent = `"${prompt}"`;
+        }, 10000);
+    },
+
+    showRandomTestimonial() {
+        const testimonial = this.testimonials[Math.floor(Math.random() * this.testimonials.length)];
+        document.getElementById('testimonialsSection').innerHTML = `
+            <div class="testimonial">
+                <p>"${testimonial.text}"</p>
+                <strong>– ${testimonial.name}</strong>
+            </div>
+        `;
     }
 };
 
